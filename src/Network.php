@@ -122,7 +122,7 @@ class Network extends AbstractNetwork implements NetworkWithProductFeeds
         $queryBuilder = static::resolveProductModelBinding()::query();
 
         if (!is_null($keyword)) {
-            $queryBuilder->whereKey(static::resolveProductModelBinding()::search($keyword)->keys());
+            $queryBuilder->whereKey(static::resolveProductModelBinding()::search($keyword)->take(65533)->keys());
         }
 
         if (!is_null($programs)) {
@@ -161,8 +161,7 @@ class Network extends AbstractNetwork implements NetworkWithProductFeeds
         ?string $trackingCode = null,
         int $page = 1,
         int $perPage = 10
-    ): Collection
-    {
+    ): Collection {
         $this->trackingCode = $trackingCode;
 
         $queryBuilder = $this->getProductQueryBuilder($keyword, $programs, $languages)->with('feed');
