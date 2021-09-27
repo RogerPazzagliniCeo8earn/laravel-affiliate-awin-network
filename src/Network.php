@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpMultipleClassDeclarationsInspection */
+
 /** @noinspection PhpUndefinedClassInspection */
 
 namespace SoluzioneSoftware\LaravelAffiliate\Networks\Awin;
@@ -95,6 +97,30 @@ class Network extends AbstractNetwork implements NetworkWithProductFeeds
         return 'awin';
     }
 
+    public static function getTrackingUrl(string $advertiser, ?string $trackingCode = null, array $params = []): string
+    {
+        return 'https://www.awin1.com/awclick.php'
+            ."?id=".static::getPublisherId()
+            ."&mid=$advertiser"
+            .($trackingCode ? '&'.strtolower(static::getTrackingCodeParam()).'='.$trackingCode : '');
+    }
+
+    private static function getPublisherId(): string
+    {
+        if (!static::$PUBLISHER_ID) {
+            static::$PUBLISHER_ID = static::getNetworkConfig('publisher_id');
+        }
+        return static::$PUBLISHER_ID;
+    }
+
+    private static function getTrackingCodeParam(): string
+    {
+        if (!static::$TRACKING_CODE_PARAM) {
+            static::$TRACKING_CODE_PARAM = static::getNetworkConfig('tracking_code_param');
+        }
+        return static::$TRACKING_CODE_PARAM;
+    }
+
     /**
      * @inheritDoc
      * @throws BindingResolutionException
@@ -188,8 +214,11 @@ class Network extends AbstractNetwork implements NetworkWithProductFeeds
             floatval($product['price']),
             $product['currency'],
             $this->getDetailsUrl($product),
-            $this->getTrackingUrl((string) $this->trackingCode,
-                ['advertiserId' => $product['feed']['advertiser_id'], 'productId' => $product['product_id']]),
+            $this->getProductTrackingUrl(
+                $product['feed']['advertiser_id'],
+                $product['product_id'],
+                $this->trackingCode
+            ),
             $product
         );
     }
@@ -208,29 +237,17 @@ class Network extends AbstractNetwork implements NetworkWithProductFeeds
         return $product['details_link'];
     }
 
-    public static function getTrackingUrl(string $trackingCode, array $params = []): string
-    {
+    public static function getProductTrackingUrl(
+        string $advertiser,
+        string $product,
+        ?string $trackingCode = null,
+        array $params = []
+    ): string {
         return 'https://www.awin1.com/pclick.php'
-            ."?p=".$params['productId']
+            ."?p=$product"
             ."&a=".static::getPublisherId()
-            ."&m=".$params['advertiserId']
-            .'&'.strtolower(static::getTrackingCodeParam()).'='.$trackingCode;
-    }
-
-    private static function getPublisherId(): string
-    {
-        if (!static::$PUBLISHER_ID) {
-            static::$PUBLISHER_ID = static::getNetworkConfig('publisher_id');
-        }
-        return static::$PUBLISHER_ID;
-    }
-
-    private static function getTrackingCodeParam(): string
-    {
-        if (!static::$TRACKING_CODE_PARAM) {
-            static::$TRACKING_CODE_PARAM = static::getNetworkConfig('tracking_code_param');
-        }
-        return static::$TRACKING_CODE_PARAM;
+            ."&m=$advertiser"
+            .'&'.($trackingCode ? strtolower(static::getTrackingCodeParam()).'='.$trackingCode : '');
     }
 
     /**
