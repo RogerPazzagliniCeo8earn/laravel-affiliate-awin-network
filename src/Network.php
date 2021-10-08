@@ -419,7 +419,7 @@ class Network extends AbstractNetwork implements NetworkWithProductFeeds, HasDee
     public function downloadFeeds(string $path, callable $progressCallback)
     {
         $this->client->get(
-            "https://productdata.awin.com/datafeed/list/apikey/{$this->productFeedApiKey}",
+            "https://productdata.awin.com/datafeed/list/apikey/$this->productFeedApiKey",
             [
                 'sink' => $path,
                 'progress' => $progressCallback,
@@ -445,8 +445,8 @@ class Network extends AbstractNetwork implements NetworkWithProductFeeds, HasDee
 
         $url = "https://productdata.awin.com"
             ."/datafeed/download"
-            ."/apikey/{$this->productFeedApiKey}"
-            ."/fid/{$feed->feed_id}"
+            ."/apikey/$this->productFeedApiKey"
+            ."/fid/$feed->feed_id"
             ."/format/csv"
             ."/language/any"
             ."/delimiter/%2C" // comma
