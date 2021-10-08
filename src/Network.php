@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\DB;
 use Matriphe\ISO639\ISO639;
 use RuntimeException;
 use SoluzioneSoftware\LaravelAffiliate\AbstractNetwork;
+use SoluzioneSoftware\LaravelAffiliate\Contracts\HasDeepLink;
 use SoluzioneSoftware\LaravelAffiliate\Contracts\NetworkWithProductFeeds;
 use SoluzioneSoftware\LaravelAffiliate\Enums\TransactionStatus;
 use SoluzioneSoftware\LaravelAffiliate\Enums\ValueType;
@@ -30,7 +31,7 @@ use SoluzioneSoftware\LaravelAffiliate\Objects\Transaction;
 use SoluzioneSoftware\LaravelAffiliate\Traits\ResolvesBindings;
 use Throwable;
 
-class Network extends AbstractNetwork implements NetworkWithProductFeeds
+class Network extends AbstractNetwork implements NetworkWithProductFeeds, HasDeepLink
 {
     use ResolvesBindings;
 
@@ -102,7 +103,7 @@ class Network extends AbstractNetwork implements NetworkWithProductFeeds
         return 'https://www.awin1.com/awclick.php'
             ."?id=".static::getPublisherId()
             ."&mid=$advertiser"
-            .($trackingCode ? '&'.strtolower(static::getTrackingCodeParam()).'='.$trackingCode : '');
+            .static::buildTrackingCodeParam($trackingCode);
     }
 
     private static function getPublisherId(): string
@@ -111,6 +112,11 @@ class Network extends AbstractNetwork implements NetworkWithProductFeeds
             static::$PUBLISHER_ID = static::getNetworkConfig('publisher_id');
         }
         return static::$PUBLISHER_ID;
+    }
+
+    static protected function buildTrackingCodeParam(?string $trackingCode = null): string
+    {
+        return $trackingCode ? '&'.static::getTrackingCodeParam().'='.$trackingCode : '';
     }
 
     private static function getTrackingCodeParam(): string
@@ -247,7 +253,7 @@ class Network extends AbstractNetwork implements NetworkWithProductFeeds
             ."?p=$product"
             ."&a=".static::getPublisherId()
             ."&m=$advertiser"
-            .'&'.($trackingCode ? strtolower(static::getTrackingCodeParam()).'='.$trackingCode : '');
+            .static::buildTrackingCodeParam($trackingCode);
     }
 
     /**
@@ -490,6 +496,14 @@ class Network extends AbstractNetwork implements NetworkWithProductFeeds
             'region' => $row['primary_region'],
             'language' => (new ISO639)->code1ByLanguage($row['language']),
         ];
+    }
+
+    public function getDeepLink(string $advertiser, string $url, ?string $trackingCode = null): string
+    {
+        $url = urlencode($url);
+        $trackingCodeParam = $this->buildTrackingCodeParam();
+        $publisherId = static::getPublisherId();
+        return "https://www.awin1.com/cread.php?awinmid=$advertiser&awinaffid=$publisherId$trackingCodeParam&ued=$url";
     }
 
     protected function getHeaders()
