@@ -501,7 +501,7 @@ class Network extends AbstractNetwork implements NetworkWithProductFeeds, HasDee
     public function getDeepLink(string $advertiser, string $url, ?string $trackingCode = null): string
     {
         $url = urlencode($url);
-        $trackingCodeParam = $this->buildTrackingCodeParam();
+        $trackingCodeParam = $this->buildTrackingCodeParam($trackingCode);
         $publisherId = static::getPublisherId();
         return "https://www.awin1.com/cread.php?awinmid=$advertiser&awinaffid=$publisherId$trackingCodeParam&ued=$url";
     }
