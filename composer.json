@@ -27,5 +27,11 @@
                 "SoluzioneSoftware\\LaravelAffiliate\\Networks\\Awin\\ServiceProvider"
             ]
         }
-    }
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/8earnity-corporation/laravel-affiliate"
+        }
+    ]
 }
