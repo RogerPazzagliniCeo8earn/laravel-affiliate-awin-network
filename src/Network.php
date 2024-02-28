@@ -510,4 +510,28 @@ class Network extends AbstractNetwork implements NetworkWithProductFeeds, HasDee
     {
         return array_merge(parent::getHeaders(), ['Authorization' => 'Bearer '.$this->apiKey]);
     }
+
+    public function executeProgramsRequest(): Collection
+    {
+        $this->requestEndPoint = '/publishers/' . static::getPublisherId() . '/programmes';
+
+        $this->queryParams['relationship'] = 'joined';
+
+        $response = $this->callApi();
+        $statusCode = $response->getStatusCode();
+        if ($statusCode !== 200) {
+            throw new RuntimeException("Expected response status code 200. Got $statusCode.");
+        }
+
+        $body = json_decode($response->getBody());
+
+        return new Collection(
+            array_map(
+                function (object $p) {
+                    return $this->programFromJson(['advertiser_id' => (string)$p->id, 'advertiser_name' => $p->name]);
+                },
+                $body
+            )
+        );
+    }
 }
